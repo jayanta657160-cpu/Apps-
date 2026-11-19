@@ -1,0 +1,270 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidInviteCode(code) {
+      return code is string && code.size() >= 6 && code.size() <= 12 && code.matches('^[A-Z0-9]{6,12}$');
+    }
+
+    function isUnitRange(v) {
+      return v is number && v >= 0.0 && v <= 1.0;
+    }
+
+    function isExposureRange(v) {
+      return v is number && v >= -1.0 && v <= 1.0;
+    }
+
+    function isValidParticleStyle(style) {
+      return style is string && style in ['NONE', 'GOLDEN_DUST', 'SUNBEAM_PRISM', 'TEAL_FIREFLIES', 'TOUCH_TRAIL'];
+    }
+
+    function hasValidGradingParams(data) {
+      return isUnitRange(data.tealShadows) &&
+             isUnitRange(data.warmHighlights) &&
+             isUnitRange(data.deepGreens) &&
+             isUnitRange(data.contrast) &&
+             isExposureRange(data.exposure) &&
+             isUnitRange(data.vibrance) &&
+             isUnitRange(data.skinProtection) &&
+             isUnitRange(data.highlightSoftness) &&
+             data.adaptiveLighting is bool &&
+             isValidParticleStyle(data.particleStyle) &&
+             isUnitRange(data.particleDensity) &&
+             isUnitRange(data.particleGlow) &&
+             isUnitRange(data.particleSpeed) &&
+             data.bakeParticlesOnExport is bool;
+    }
+
+    function isValidGradingPreset(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 60 &&
+             data.description is string && data.description.size() <= 180 &&
+             hasValidGradingParams(data) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCollabStudio(data) {
+      return data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 60 &&
+             data.description is string && data.description.size() <= 180 &&
+             isValidInviteCode(data.inviteCode) &&
+             data.memberUids is list && data.memberUids.size() >= 1 && data.memberUids.size() <= 20 &&
+             (data.ownerId in data.memberUids) &&
+             (data.memberUids[0] is string) &&
+             data.activeRecipeName is string && data.activeRecipeName.size() >= 1 && data.activeRecipeName.size() <= 60 &&
+             data.updatedByUid is string && data.updatedByUid.size() >= 1 && data.updatedByUid.size() <= 128 &&
+             data.updatedByName is string && data.updatedByName.size() >= 1 && data.updatedByName.size() <= 60 &&
+             hasValidGradingParams(data) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidStudioInvite(data) {
+      return isValidId(data.studioId) &&
+             data.studioName is string && data.studioName.size() >= 1 && data.studioName.size() <= 60 &&
+             data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidStudioRevision(data) {
+      return isValidId(data.studioId) &&
+             data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 60 &&
+             data.recipeName is string && data.recipeName.size() >= 1 && data.recipeName.size() <= 60 &&
+             data.note is string && data.note.size() <= 180 &&
+             data.memberUids is list && data.memberUids.size() >= 1 && data.memberUids.size() <= 20 &&
+             (data.memberUids[0] is string) &&
+             hasValidGradingParams(data) &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    // 1. User-scoped personal presets
+    match /users/{userId}/presets/{presetId} {
+      allow get: if isSignedIn() && request.auth.uid == userId && isValidId(presetId);
+      allow list: if isSignedIn() && request.auth.uid == userId;
+
+      allow create: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       isValidId(presetId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'userId', 'name', 'description',
+                         'tealShadows', 'warmHighlights', 'deepGreens', 'contrast',
+                         'exposure', 'vibrance', 'skinProtection', 'highlightSoftness', 'adaptiveLighting',
+                         'particleStyle', 'particleDensity', 'particleGlow', 'particleSpeed', 'bakeParticlesOnExport',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'name', 'description',
+                         'tealShadows', 'warmHighlights', 'deepGreens', 'contrast',
+                         'exposure', 'vibrance', 'skinProtection', 'highlightSoftness', 'adaptiveLighting',
+                         'particleStyle', 'particleDensity', 'particleGlow', 'particleSpeed', 'bakeParticlesOnExport',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidGradingPreset(incoming());
+
+      allow update: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       isValidId(presetId) &&
+                       isValidGradingPreset(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'name', 'description',
+                         'tealShadows', 'warmHighlights', 'deepGreens', 'contrast',
+                         'exposure', 'vibrance', 'skinProtection', 'highlightSoftness', 'adaptiveLighting',
+                         'particleStyle', 'particleDensity', 'particleGlow', 'particleSpeed', 'bakeParticlesOnExport',
+                         'updatedAt'
+                       ]);
+
+      allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(presetId);
+    }
+
+    // 2. Collaborative Studios
+    match /studios/{studioId} {
+      allow get: if isSignedIn() && isValidId(studioId) && (request.auth.uid in existing().memberUids);
+      allow list: if isSignedIn() && (request.auth.uid in existing().memberUids);
+
+      allow create: if isSignedIn() &&
+                       isValidId(studioId) &&
+                       incoming().ownerId == request.auth.uid &&
+                       incoming().updatedByUid == request.auth.uid &&
+                       incoming().memberUids.size() == 1 &&
+                       incoming().memberUids[0] == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'ownerId', 'name', 'description', 'inviteCode', 'memberUids',
+                         'activeRecipeName', 'updatedByUid', 'updatedByName',
+                         'tealShadows', 'warmHighlights', 'deepGreens', 'contrast',
+                         'exposure', 'vibrance', 'skinProtection', 'highlightSoftness', 'adaptiveLighting',
+                         'particleStyle', 'particleDensity', 'particleGlow', 'particleSpeed', 'bakeParticlesOnExport',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'ownerId', 'name', 'description', 'inviteCode', 'memberUids',
+                         'activeRecipeName', 'updatedByUid', 'updatedByName',
+                         'tealShadows', 'warmHighlights', 'deepGreens', 'contrast',
+                         'exposure', 'vibrance', 'skinProtection', 'highlightSoftness', 'adaptiveLighting',
+                         'particleStyle', 'particleDensity', 'particleGlow', 'particleSpeed', 'bakeParticlesOnExport',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidCollabStudio(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(studioId) &&
+                       isValidCollabStudio(incoming()) &&
+                       incoming().ownerId == existing().ownerId &&
+                       incoming().inviteCode == existing().inviteCode &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         // Action A: Join Studio via invite (adds only self to memberUids)
+                         (
+                           !(request.auth.uid in existing().memberUids) &&
+                           existing().memberUids.size() < 20 &&
+                           (request.auth.uid in incoming().memberUids) &&
+                           incoming().memberUids.hasAll(existing().memberUids) &&
+                           incoming().memberUids.size() == existing().memberUids.size() + 1 &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['memberUids', 'updatedAt'])
+                         ) ||
+                         // Action B: Member collaborative grading/particle edit
+                         (
+                           (request.auth.uid in existing().memberUids) &&
+                           incoming().memberUids == existing().memberUids &&
+                           incoming().updatedByUid == request.auth.uid &&
+                           incoming().diff(existing()).affectedKeys().hasOnly([
+                             'name', 'description', 'activeRecipeName', 'updatedByUid', 'updatedByName',
+                             'tealShadows', 'warmHighlights', 'deepGreens', 'contrast',
+                             'exposure', 'vibrance', 'skinProtection', 'highlightSoftness', 'adaptiveLighting',
+                             'particleStyle', 'particleDensity', 'particleGlow', 'particleSpeed', 'bakeParticlesOnExport',
+                             'updatedAt'
+                           ])
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(studioId) && existing().ownerId == request.auth.uid;
+
+      // 3. Collaborative Recipe Snapshots (Revisions)
+      match /revisions/{revisionId} {
+        allow get: if isSignedIn() && isValidId(studioId) && isValidId(revisionId) &&
+                      (
+                        (request.auth.uid in existing().memberUids) ||
+                        (request.auth.uid in get(/databases/$(database)/documents/studios/$(studioId)).data.memberUids)
+                      );
+        allow list: if isSignedIn() && isValidId(studioId) && (request.auth.uid in existing().memberUids);
+
+        allow create: if isSignedIn() &&
+                         isValidId(studioId) &&
+                         isValidId(revisionId) &&
+                         incoming().studioId == studioId &&
+                         incoming().authorId == request.auth.uid &&
+                         (request.auth.uid in incoming().memberUids) &&
+                         incoming().keys().hasAll([
+                           'studioId', 'authorId', 'authorName', 'recipeName', 'note', 'memberUids',
+                           'tealShadows', 'warmHighlights', 'deepGreens', 'contrast',
+                           'exposure', 'vibrance', 'skinProtection', 'highlightSoftness', 'adaptiveLighting',
+                           'particleStyle', 'particleDensity', 'particleGlow', 'particleSpeed', 'bakeParticlesOnExport',
+                           'createdAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'studioId', 'authorId', 'authorName', 'recipeName', 'note', 'memberUids',
+                           'tealShadows', 'warmHighlights', 'deepGreens', 'contrast',
+                           'exposure', 'vibrance', 'skinProtection', 'highlightSoftness', 'adaptiveLighting',
+                           'particleStyle', 'particleDensity', 'particleGlow', 'particleSpeed', 'bakeParticlesOnExport',
+                           'createdAt'
+                         ]) &&
+                         isValidStudioRevision(incoming()) &&
+                         exists(/databases/$(database)/documents/studios/$(studioId)) &&
+                         (request.auth.uid in get(/databases/$(database)/documents/studios/$(studioId)).data.memberUids) &&
+                         incoming().memberUids == get(/databases/$(database)/documents/studios/$(studioId)).data.memberUids;
+
+        allow update: if false;
+
+        allow delete: if isSignedIn() && isValidId(studioId) && isValidId(revisionId) &&
+                         (
+                           existing().authorId == request.auth.uid ||
+                           get(/databases/$(database)/documents/studios/$(studioId)).data.ownerId == request.auth.uid
+                         );
+      }
+    }
+
+    // 4. Studio Invite Lookup (get-only by exact invite code; no list scraping)
+    match /studioInvites/{inviteCode} {
+      allow get: if isSignedIn() && isValidInviteCode(inviteCode);
+      allow list: if false;
+
+      allow create: if isSignedIn() &&
+                       isValidInviteCode(inviteCode) &&
+                       incoming().ownerId == request.auth.uid &&
+                       incoming().keys().hasAll(['studioId', 'studioName', 'ownerId', 'createdAt']) &&
+                       incoming().keys().hasOnly(['studioId', 'studioName', 'ownerId', 'createdAt']) &&
+                       isValidStudioInvite(incoming()) &&
+                       existsAfter(/databases/$(database)/documents/studios/$(incoming().studioId)) &&
+                       getAfter(/databases/$(database)/documents/studios/$(incoming().studioId)).data.ownerId == request.auth.uid &&
+                       getAfter(/databases/$(database)/documents/studios/$(incoming().studioId)).data.inviteCode == inviteCode;
+
+      allow update: if false;
+      allow delete: if isSignedIn() && isValidInviteCode(inviteCode) && existing().ownerId == request.auth.uid;
+    }
+  }
+}

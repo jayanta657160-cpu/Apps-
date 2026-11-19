@@ -1,0 +1,8 @@
+{
+  "name": "JD Cam",
+  "description": "Collaborative Teal \u0026 Warm wedding cinematic grading camera and particle art studio with adaptive DSLR color science.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

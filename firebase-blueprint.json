@@ -1,0 +1,150 @@
+{
+  "entities": {
+    "GradingPreset": {
+      "title": "GradingPreset",
+      "description": "Personal saved Teal & Warm cinematic grading and particle art preset.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID" },
+        "name": { "type": "string", "description": "Preset title" },
+        "description": { "type": "string", "description": "Short preset notes" },
+        "tealShadows": { "type": "number", "description": "Teal shadow toning 0..1" },
+        "warmHighlights": { "type": "number", "description": "Warm golden highlights 0..1" },
+        "deepGreens": { "type": "number", "description": "Deep foliage green enrichment 0..1" },
+        "contrast": { "type": "number", "description": "Cinematic tone contrast 0..1" },
+        "exposure": { "type": "number", "description": "Exposure compensation -1..1" },
+        "vibrance": { "type": "number", "description": "Skin-safe vibrance 0..1" },
+        "skinProtection": { "type": "number", "description": "Skin tone preservation strength 0..1" },
+        "highlightSoftness": { "type": "number", "description": "Highlight rolloff softness 0..1" },
+        "adaptiveLighting": { "type": "boolean", "description": "Adapt grading to each photo's lighting" },
+        "particleStyle": {
+          "type": "string",
+          "enum": ["NONE", "GOLDEN_DUST", "SUNBEAM_PRISM", "TEAL_FIREFLIES", "TOUCH_TRAIL"]
+        },
+        "particleDensity": { "type": "number", "description": "Particle count density 0..1" },
+        "particleGlow": { "type": "number", "description": "Particle bloom intensity 0..1" },
+        "particleSpeed": { "type": "number", "description": "Particle drift speed 0..1" },
+        "bakeParticlesOnExport": { "type": "boolean", "description": "Composite particles onto exported photos" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server update timestamp" }
+      },
+      "required": [
+        "userId", "name", "description",
+        "tealShadows", "warmHighlights", "deepGreens", "contrast",
+        "exposure", "vibrance", "skinProtection", "highlightSoftness", "adaptiveLighting",
+        "particleStyle", "particleDensity", "particleGlow", "particleSpeed", "bakeParticlesOnExport",
+        "createdAt", "updatedAt"
+      ]
+    },
+    "CollabStudio": {
+      "title": "CollabStudio",
+      "description": "Real-time collaborative Teal & Warm grading & particle art studio shared by members.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "inviteCode": { "type": "string" },
+        "memberUids": { "type": "array" },
+        "activeRecipeName": { "type": "string" },
+        "updatedByUid": { "type": "string" },
+        "updatedByName": { "type": "string" },
+        "tealShadows": { "type": "number" },
+        "warmHighlights": { "type": "number" },
+        "deepGreens": { "type": "number" },
+        "contrast": { "type": "number" },
+        "exposure": { "type": "number" },
+        "vibrance": { "type": "number" },
+        "skinProtection": { "type": "number" },
+        "highlightSoftness": { "type": "number" },
+        "adaptiveLighting": { "type": "boolean" },
+        "particleStyle": {
+          "type": "string",
+          "enum": ["NONE", "GOLDEN_DUST", "SUNBEAM_PRISM", "TEAL_FIREFLIES", "TOUCH_TRAIL"]
+        },
+        "particleDensity": { "type": "number" },
+        "particleGlow": { "type": "number" },
+        "particleSpeed": { "type": "number" },
+        "bakeParticlesOnExport": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "ownerId", "name", "description", "inviteCode", "memberUids",
+        "activeRecipeName", "updatedByUid", "updatedByName",
+        "tealShadows", "warmHighlights", "deepGreens", "contrast",
+        "exposure", "vibrance", "skinProtection", "highlightSoftness", "adaptiveLighting",
+        "particleStyle", "particleDensity", "particleGlow", "particleSpeed", "bakeParticlesOnExport",
+        "createdAt", "updatedAt"
+      ]
+    },
+    "StudioInvite": {
+      "title": "StudioInvite",
+      "description": "Direct invite-code lookup document mapping an invite code to a CollabStudio.",
+      "type": "object",
+      "properties": {
+        "studioId": { "type": "string" },
+        "studioName": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studioId", "studioName", "ownerId", "createdAt"]
+    },
+    "StudioRevision": {
+      "title": "StudioRevision",
+      "description": "Immutable collaborative recipe snapshot posted inside a CollabStudio.",
+      "type": "object",
+      "properties": {
+        "studioId": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "recipeName": { "type": "string" },
+        "note": { "type": "string" },
+        "memberUids": { "type": "array" },
+        "tealShadows": { "type": "number" },
+        "warmHighlights": { "type": "number" },
+        "deepGreens": { "type": "number" },
+        "contrast": { "type": "number" },
+        "exposure": { "type": "number" },
+        "vibrance": { "type": "number" },
+        "skinProtection": { "type": "number" },
+        "highlightSoftness": { "type": "number" },
+        "adaptiveLighting": { "type": "boolean" },
+        "particleStyle": {
+          "type": "string",
+          "enum": ["NONE", "GOLDEN_DUST", "SUNBEAM_PRISM", "TEAL_FIREFLIES", "TOUCH_TRAIL"]
+        },
+        "particleDensity": { "type": "number" },
+        "particleGlow": { "type": "number" },
+        "particleSpeed": { "type": "number" },
+        "bakeParticlesOnExport": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "studioId", "authorId", "authorName", "recipeName", "note", "memberUids",
+        "tealShadows", "warmHighlights", "deepGreens", "contrast",
+        "exposure", "vibrance", "skinProtection", "highlightSoftness", "adaptiveLighting",
+        "particleStyle", "particleDensity", "particleGlow", "particleSpeed", "bakeParticlesOnExport",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/presets/{presetId}": {
+      "schema": { "$ref": "#/entities/GradingPreset" },
+      "description": "User's private saved Teal & Warm + Particle Art presets."
+    },
+    "/studios/{studioId}": {
+      "schema": { "$ref": "#/entities/CollabStudio" },
+      "description": "Collaborative real-time grading studios accessible by members."
+    },
+    "/studioInvites/{inviteCode}": {
+      "schema": { "$ref": "#/entities/StudioInvite" },
+      "description": "Invite lookup keyed by exact uppercase invite code."
+    },
+    "/studios/{studioId}/revisions/{revisionId}": {
+      "schema": { "$ref": "#/entities/StudioRevision" },
+      "description": "Collaborative recipe snapshots posted to a studio."
+    }
+  }
+}

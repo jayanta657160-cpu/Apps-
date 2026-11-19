@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">JD Cam</string>
+    <string name="brand_tagline">Teal &amp; Warm Cinema Darkroom</string>
+    <string name="nav_camera">Camera</string>
+    <string name="nav_captures">Captures</string>
+    <string name="nav_studio">Studio</string>
+    <string name="camera_permission_title">Camera Access for Live Grading</string>
+    <string name="camera_permission_body">Grant camera access to preview real-time Teal &amp; Warm grading and particle art in your viewfinder, or pick any photo from your gallery.</string>
+    <string name="grant_camera_permission">Enable Camera</string>
+    <string name="import_from_gallery">Import Photo</string>
+    <string name="capture_photo">Capture Graded Photo</string>
+    <string name="compare_hold">Hold to Compare Original</string>
+    <string name="export_dslr">Export DSLR JPEG</string>
+    <string name="save_preset">Save Preset</string>
+    <string name="focus_peaking_label">Peaking</string>
+    <string name="focus_peaking_toggle_desc">Toggle Sobel Focus Peaking Overlay</string>
+    <string name="focus_peaking_color_desc">Cycle Focus Peaking Highlight Color</string>
+    <string name="focus_peaking_sensitivity_desc">Cycle Focus Peaking Edge Sensitivity</string>
+    <string name="timer_3s_desc">Toggle 3-second self-timer</string>
+    <string name="timer_10s_desc">Toggle 10-second self-timer</string>
+    <string name="timer_cancel_desc">Cancel active self-timer countdown</string>
+    <string name="download_photo">Download</string>
+    <string name="share_photo">Share Photo</string>
+    <string name="share_app">Share App</string>
+    <string name="share_app_title">Download &amp; Share JD Cam</string>
+    <string name="share_app_apk">Share App APK</string>
+    <string name="download_app_apk">Save APK to Downloads</string>
+    <string name="share_app_invite">Share App Invite</string>
+    <string name="burst_hint">Tap to capture · Hold for burst</string>
+    <string name="burst_capturing_desc">Burst capture in progress</string>
+</resources>
